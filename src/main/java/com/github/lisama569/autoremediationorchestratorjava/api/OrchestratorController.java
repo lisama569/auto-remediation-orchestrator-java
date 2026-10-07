@@ -34,7 +34,8 @@ public class OrchestratorController {
     }
 
     public record RegisterTargetRequest(String targetId, boolean inMaintenanceWindow) {}
-    public record SubmitPlanRequest(String targetId, FaultType faultType, String idempotencyKey) {}
+    public record SubmitPlanRequest(String targetId, FaultType faultType, String idempotencyKey,
+                                    Boolean queueIfBusy) {}
 
     @PostMapping("/targets")
     public Target registerTarget(@RequestBody RegisterTargetRequest request) {
@@ -68,8 +69,10 @@ public class OrchestratorController {
 
     @PostMapping("/plans")
     public ResponseEntity<SubmissionResult> submitPlan(@RequestBody SubmitPlanRequest request) {
+        // queueIfBusy 缺省 false：不带该字段的老请求行为完全不变
+        boolean queueIfBusy = Boolean.TRUE.equals(request.queueIfBusy());
         SubmissionResult result = orchestrator.submit(
-                request.targetId(), request.faultType(), request.idempotencyKey());
+                request.targetId(), request.faultType(), request.idempotencyKey(), queueIfBusy);
         return result.accepted()
                 ? ResponseEntity.accepted().body(result)
                 : ResponseEntity.status(HttpStatus.CONFLICT).body(result);
