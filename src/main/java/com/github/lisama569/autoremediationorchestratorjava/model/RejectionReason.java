@@ -9,5 +9,7 @@ public enum RejectionReason {
     /** 同一目标已有进行中的计划 */
     PLAN_CONFLICT,
     /** 相同幂等键的重复下发 */
-    DUPLICATE_REQUEST
+    DUPLICATE_REQUEST,
+    /** 声明忙时排队但目标等待队列已满 */
+    QUEUE_FULL
 }

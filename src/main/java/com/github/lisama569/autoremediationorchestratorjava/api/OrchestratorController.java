@@ -34,7 +34,8 @@ public class OrchestratorController {
     }
 
     public record RegisterTargetRequest(String targetId, boolean inMaintenanceWindow) {}
-    public record SubmitPlanRequest(String targetId, FaultType faultType, String idempotencyKey) {}
+    public record SubmitPlanRequest(String targetId, FaultType faultType, String idempotencyKey,
+                                    Boolean queueWhenBusy) {}
 
     @PostMapping("/targets")
     public Target registerTarget(@RequestBody RegisterTargetRequest request) {
@@ -69,7 +70,8 @@ public class OrchestratorController {
     @PostMapping("/plans")
     public ResponseEntity<SubmissionResult> submitPlan(@RequestBody SubmitPlanRequest request) {
         SubmissionResult result = orchestrator.submit(
-                request.targetId(), request.faultType(), request.idempotencyKey());
+                request.targetId(), request.faultType(), request.idempotencyKey(),
+                Boolean.TRUE.equals(request.queueWhenBusy()));
         return result.accepted()
                 ? ResponseEntity.accepted().body(result)
                 : ResponseEntity.status(HttpStatus.CONFLICT).body(result);
